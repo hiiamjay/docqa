@@ -1,3 +1,4 @@
+os
 openai
 pinecone-client
 langchain
@@ -8,4 +9,3 @@ unstructured[pdf]
 streamlit
 faiss-cpu
 tiktoken
-os
