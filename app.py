@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 # from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
@@ -8,6 +9,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
+
+os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -30,13 +33,13 @@ def get_text_chunks(text):
 
 
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings(openai_api_key="sk-proj-AEJtQbdcCXDcoguwxNBUT3BlbkFJeOeOVpJzwMvJVLUFVFtj")
+    embeddings = OpenAIEmbeddings()
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI(openai_api_key="sk-proj-AEJtQbdcCXDcoguwxNBUT3BlbkFJeOeOVpJzwMvJVLUFVFtj")
+    llm = ChatOpenAI()
     
     memory = ConversationBufferMemory(
         memory_key='chat_history', return_messages=True)
@@ -73,7 +76,7 @@ def main():
     # if "selected_company" not in st.session_state or st.session_state.selected_company != company:
     st.session_state.selected_company = company
     vectorstore_path = f"./annual_reports/Transcripts/{company}/faiss_index"
-    vectorstore = FAISS.load_local(vectorstore_path, allow_dangerous_deserialization=True, embeddings=OpenAIEmbeddings(openai_api_key="sk-proj-AEJtQbdcCXDcoguwxNBUT3BlbkFJeOeOVpJzwMvJVLUFVFtj"))
+    vectorstore = FAISS.load_local(vectorstore_path, allow_dangerous_deserialization=True, embeddings=OpenAIEmbeddings())
     st.session_state.conversation = get_conversation_chain(vectorstore)
     st.session_state[f'chat_history_{company}'] = []
 
@@ -84,7 +87,7 @@ def main():
     if st.button('Reset Chat'):
         st.session_state[f'chat_history_{company}'] = []
         vectorstore_path = f"./annual_reports/Transcripts/{company}/faiss_index"
-        vectorstore = FAISS.load_local(vectorstore_path, allow_dangerous_deserialization=True, embeddings=OpenAIEmbeddings(openai_api_key="sk-proj-AEJtQbdcCXDcoguwxNBUT3BlbkFJeOeOVpJzwMvJVLUFVFtj"))
+        vectorstore = FAISS.load_local(vectorstore_path, allow_dangerous_deserialization=True, embeddings=OpenAIEmbeddings())
         st.session_state.conversation = get_conversation_chain(vectorstore)
 
 if __name__ == '__main__':
